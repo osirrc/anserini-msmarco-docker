@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Clone anserini
+git clone https://github.com/castorini/anserini.git && cd anserini
+
+# Build anserini
+mvn clean package appassembler:assemble -DskipTests

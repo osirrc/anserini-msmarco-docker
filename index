@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+cd /work/anserini
+
+# The JSON params from jig
+JSON=$2
+
+# The data tar.gz file
+CAQ=$(echo ${JSON} | jq -r '.collections[0].path')/collectionandqueries.tar.gz
+
+# MS MARCO data directory
+DATA_DIR=./msmarco_data
+
+mkdir ${DATA_DIR}
+tar -xvf ${CAQ} -C ${DATA_DIR}
+
+python3 ./src/main/python/msmarco/convert_collection_to_jsonl.py \
+    --collection_path=${DATA_DIR}/collection.tsv \
+    --output_folder=${DATA_DIR}/collection_jsonl
+
+sh ./target/appassembler/bin/IndexCollection \
+    -collection JsonCollection -generator LuceneDocumentGenerator -threads 9 \
+    -input ${DATA_DIR}/collection_jsonl \
+    -index ${DATA_DIR}/lucene-index-msmarco \
+    -optimize -storePositions -storeDocvectors -storeRawDocs

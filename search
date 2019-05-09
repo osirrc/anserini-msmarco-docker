@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+cd /work/anserini
+
+# MS MARCO data directory
+DATA_DIR=./msmarco_data
+
+python3 ./src/main/python/msmarco/filter_queries.py \
+    --qrels=${DATA_DIR}/qrels.dev.small.tsv \
+    --queries=${DATA_DIR}/queries.dev.tsv \
+    --output_queries=${DATA_DIR}/queries.dev.small.tsv
+
+python3 ./src/main/python/msmarco/retrieve.py \
+    --index ${DATA_DIR}/lucene-index-msmarco \
+    --qid_queries ${DATA_DIR}/queries.dev.small.tsv \
+    --output ${DATA_DIR}/run.dev.small.tsv --hits 1000
+
+python3 ./src/main/python/msmarco/msmarco_eval.py \
+    ${DATA_DIR}/qrels.dev.small.tsv \
+    ${DATA_DIR}/run.dev.small.tsv
+
+python3 ./src/main/python/msmarco/convert_msmarco_to_trec_run.py \
+    --input_run ${DATA_DIR}/run.dev.small.tsv \
+    --output_run ${DATA_DIR}/run.dev.small.trec
+
+cp ${DATA_DIR}/run.dev.small.trec /output/
