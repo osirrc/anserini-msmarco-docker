@@ -11,13 +11,16 @@ CAQ=$(echo ${JSON} | jq -r '.collections[0].path')/collectionandqueries.tar.gz
 # MS MARCO data directory
 DATA_DIR=./msmarco_data
 
+# Create data dir and extract data
 mkdir ${DATA_DIR}
 tar -xvf ${CAQ} -C ${DATA_DIR}
 
+# Convert to jsonl format
 python3 ./src/main/python/msmarco/convert_collection_to_jsonl.py \
     --collection_path=${DATA_DIR}/collection.tsv \
     --output_folder=${DATA_DIR}/collection_jsonl
 
+# Index with anserini
 sh ./target/appassembler/bin/IndexCollection \
     -collection JsonCollection -generator LuceneDocumentGenerator -threads 9 \
     -input ${DATA_DIR}/collection_jsonl \
